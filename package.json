@@ -1,0 +1,63 @@
+{
+  "name": "cthulhu-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "dev:electron": "vite --mode development",
+    "build": "vite build && electron-builder --dir",
+    "dist": "vite build && electron-builder",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:mac": "vite build && electron-builder --mac",
+    "dist:linux": "vite build && electron-builder --linux",
+    "start": "npm run dev:electron"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron-is-dev": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@types/node": "^24.7.2",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^5.0.4",
+    "electron": "^38.3.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vite-plugin-electron": "^0.29.0"
+  },
+  "build": {
+    "appId": "com.example.electronreactts",
+    "productName": "Electron React TS",
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    }
+  }
+}
