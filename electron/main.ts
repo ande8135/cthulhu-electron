@@ -1,14 +1,56 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import path from "node:path";
 import isDev from "electron-is-dev";
+import fs from "node:fs/promises";
+import { createApplicationMenu } from "./menu";
+
+// Disable hardware acceleration to prevent GPU-related errors
+// Only disable hardware acceleration if there are GPU issues
+if (process.platform === 'linux') {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-gpu-compositing');
+}
+
+// Disable autofill to prevent unnecessary overhead
+app.commandLine.appendSwitch('disable-features', 'Autofill');
+
+const MAX_RECENT_FILES = 5;
+
+// Store recent files in app.getPath('userData')
+const getRecentFilesPath = () => path.join(app.getPath('userData'), 'recent-files.json');
+
+async function loadRecentFiles(): Promise<string[]> {
+  try {
+    const content = await fs.readFile(getRecentFilesPath(), 'utf-8');
+    return JSON.parse(content);
+  } catch {
+    return [];
+  }
+}
+
+async function saveRecentFiles(files: string[]) {
+  await fs.writeFile(getRecentFilesPath(), JSON.stringify(files));
+}
+
+async function addRecentFile(filePath: string) {
+  const recentFiles = await loadRecentFiles();
+  const newRecent = [filePath, ...recentFiles.filter(f => f !== filePath)]
+    .slice(0, MAX_RECENT_FILES);
+  await saveRecentFiles(newRecent);
+  return newRecent;
+}
 
 let win: BrowserWindow | null = null;
 
 const createWindow = async () => {
   win = new BrowserWindow({
-    width: 1100,
-    height: 720,
-    title: "Electron React TS",
+    width: 1200,
+    height: 800,
+    title: "Call of Cthulhu Character Editor",
+    backgroundColor: '#f7f3e3', // Match the app background color
+    titleBarStyle: 'hidden', // More modern look
+    trafficLightPosition: { x: 16, y: 16 }, // Better positioning for macOS window controls
     webPreferences: {
       // security best practices:
       contextIsolation: true,
@@ -57,6 +99,9 @@ const createWindow = async () => {
   });
 
   win.on("closed", () => (win = null));
+
+  // Create the application menu
+  createApplicationMenu(win);
 };
 
 app.whenReady().then(createWindow);
@@ -64,6 +109,47 @@ app.whenReady().then(createWindow);
 // macOS: re-create window on dock icon click when no windows are open
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// File operation handlers
+ipcMain.handle('dialog:showSave', async () => {
+  const result = await dialog.showSaveDialog({
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  });
+  return result.filePath;
+});
+
+ipcMain.handle('dialog:showOpen', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  });
+  return result.filePaths[0];
+});
+
+ipcMain.handle('file:save', async (_, data) => {
+  const { filePath, ...characterData } = data;
+  await fs.writeFile(filePath, JSON.stringify(characterData, null, 2));
+  await addRecentFile(filePath);
+  return true;
+});
+
+ipcMain.handle('file:load', async (_, filePath) => {
+  const content = await fs.readFile(filePath, 'utf-8');
+  await addRecentFile(filePath);
+  return { ...JSON.parse(content), filePath };
+});
+
+ipcMain.handle('recent:get', async () => {
+  return await loadRecentFiles();
+});
+
+ipcMain.handle('recent:add', async (_, filePath) => {
+  return await addRecentFile(filePath);
+});
+
+ipcMain.handle('window:new', () => {
+  createWindow();
 });
 
 app.on("window-all-closed", () => {

@@ -1,0 +1,359 @@
+{
+  "name": "Test investigator",
+  "occupation": "plumber",
+  "age": "25",
+  "sex": "m",
+  "residence": "hudson",
+  "birthplace": "fridley",
+  "str": {
+    "current": "85",
+    "half": "42",
+    "fifth": "17"
+  },
+  "con": {
+    "current": "80",
+    "half": "40",
+    "fifth": "16"
+  },
+  "dex": {
+    "current": "75",
+    "half": "37",
+    "fifth": "15"
+  },
+  "app": {
+    "current": "50",
+    "half": "25",
+    "fifth": "10"
+  },
+  "pow": {
+    "current": "55",
+    "half": "27",
+    "fifth": "11"
+  },
+  "siz": {
+    "current": "75",
+    "half": "37",
+    "fifth": "15"
+  },
+  "int": {
+    "current": "50",
+    "half": "25",
+    "fifth": "10"
+  },
+  "edu": {
+    "current": "60",
+    "half": "30",
+    "fifth": "12"
+  },
+  "skills": {
+    "Fighting (Brawl)": {
+      "base": 25,
+      "occupation": 0,
+      "personal": 0,
+      "final": 25
+    },
+    "Firearms (Handgun)": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Firearms (Rifle/Shotgun)": {
+      "base": 25,
+      "occupation": 0,
+      "personal": 0,
+      "final": 25
+    },
+    "Throw": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Charm": {
+      "base": 15,
+      "occupation": 10,
+      "personal": 10,
+      "final": 15
+    },
+    "Fast Talk": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Intimidate": {
+      "base": 15,
+      "occupation": 0,
+      "personal": 0,
+      "final": 15
+    },
+    "Persuade": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Credit Rating": {
+      "base": 0,
+      "occupation": 0,
+      "personal": 0,
+      "final": 0
+    },
+    "Climb": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Dodge": {
+      "base": 0,
+      "occupation": 0,
+      "personal": 0,
+      "final": 0
+    },
+    "Drive Auto": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Jump": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Ride": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Swim": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "First Aid": {
+      "base": 30,
+      "occupation": 0,
+      "personal": 0,
+      "final": 30
+    },
+    "History": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Language (Own)": {
+      "base": 0,
+      "occupation": 0,
+      "personal": 0,
+      "final": 0
+    },
+    "Natural World": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Navigate": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Occult": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Library Use": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Listen": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Psychology": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Spot Hidden": {
+      "base": 25,
+      "occupation": 0,
+      "personal": 0,
+      "final": 25
+    },
+    "Track": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Archaeology": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Astronomy": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Biology": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Chemistry": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Geology": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Medicine": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Physics": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Disguise": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Hide": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Locksmith": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Sleight of Hand": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Stealth": {
+      "base": 20,
+      "occupation": 0,
+      "personal": 0,
+      "final": 20
+    },
+    "Accounting": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Electrical Repair": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Mechanical Repair": {
+      "base": 10,
+      "occupation": 0,
+      "personal": 0,
+      "final": 10
+    },
+    "Operate Heavy Machinery": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Art/Craft (Drawing)": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Art/Craft (Painting)": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Art/Craft (Photography)": {
+      "base": 5,
+      "occupation": 0,
+      "personal": 0,
+      "final": 5
+    },
+    "Language (Other) (Latin)": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Language (Other) (Greek)": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    },
+    "Language (Other) (Arabic)": {
+      "base": 1,
+      "occupation": 0,
+      "personal": 0,
+      "final": 1
+    }
+  },
+  "weapons": [],
+  "damageBonus": "",
+  "build": "",
+  "hp": "",
+  "maxHp": "",
+  "sanity": "",
+  "maxSanity": "",
+  "description": "",
+  "ideology": "",
+  "significantPeople": "",
+  "meaningfulLocations": "",
+  "treasuredPossessions": "",
+  "traits": "",
+  "injuries": "",
+  "phobias": "",
+  "arcane": "",
+  "encounters": "",
+  "possessions": [],
+  "assets": "",
+  "cash": "",
+  "spendingLevel": ""
+}
