@@ -1,6 +1,12 @@
 import { Box, TextField } from '@mui/material';
 import { useFormikContext } from 'formik';
 
+import { Setting } from '../data/settings';
+
+interface CharacterBasicInfoProps {
+  setting: Setting;
+}
+
 interface CharacterBasicInfoValues {
   name: string;
   occupation: string;
@@ -8,9 +14,11 @@ interface CharacterBasicInfoValues {
   sex: string;
   residence: string;
   birthplace: string;
+  email?: string;
+  socialClass?: string;
 }
 
-export default function CharacterBasicInfo() {
+export default function CharacterBasicInfo({ setting }: CharacterBasicInfoProps) {
   const { values, handleChange, handleBlur } = useFormikContext<CharacterBasicInfoValues>();
 
   return (
@@ -81,6 +89,30 @@ export default function CharacterBasicInfo() {
         onBlur={handleBlur}
         value={values.birthplace || ''}
       />
+      {setting.id === 'modern' && (
+        <TextField
+          fullWidth
+          id="email"
+          name="email"
+          label="Email Address"
+          variant="outlined"
+          onChange={handleChange}
+          onBlur={handleBlur}
+          value={values.email || ''}
+        />
+      )}
+      {setting.id === 'regency' && (
+        <TextField
+          fullWidth
+          id="socialClass"
+          name="socialClass"
+          label="Social Class"
+          variant="outlined"
+          onChange={handleChange}
+          onBlur={handleBlur}
+          value={values.socialClass || ''}
+        />
+      )}
     </Box>
   );
 }

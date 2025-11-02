@@ -69,8 +69,8 @@ const PlayModeSkillField = ({
   return (
     <Box sx={{
       display: 'grid',
-      gridTemplateColumns: '40px minmax(180px, 1fr) repeat(3, 80px)',
-      gap: 2,
+      gridTemplateColumns: '40px minmax(200px, 1fr) repeat(3, 100px)',
+      gap: 3,
       alignItems: 'center',
       padding: '4px 8px',
       '&:hover': {
@@ -161,8 +161,8 @@ const SkillField = ({
   return (
     <Box sx={{
       display: 'grid',
-      gridTemplateColumns: '40px minmax(180px, 1fr) 100px 100px 140px',
-      gap: 2,
+      gridTemplateColumns: '40px minmax(200px, 1fr) 120px 120px 180px',
+      gap: 3,
       alignItems: 'center',
       padding: '4px 8px',
       '&:hover': {
@@ -396,8 +396,8 @@ export default function CharacterSkills() {
         </ToggleButtonGroup>
       </Box>
       {viewMode === 'create' && (
-        <Paper elevation={1} sx={{ p: 3, mb: 2, maxWidth: '800px', margin: '0 auto' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+        <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
             <Stack spacing={1}>
               <Typography variant="subtitle2" color="primary.main">Occupation Points</Typography>
               <Stack direction="row" spacing={1} alignItems="center">
@@ -450,7 +450,7 @@ export default function CharacterSkills() {
         </Box>
       )}
 
-      <Paper elevation={1} sx={{ p: 2, maxWidth: '800px', margin: '0 auto' }}>
+      <Paper elevation={1} sx={{ p: 2 }}>
         {Object.entries(skillsByCategory).map(([category, skills]) => (
           <Accordion key={category}>
             <AccordionSummary 

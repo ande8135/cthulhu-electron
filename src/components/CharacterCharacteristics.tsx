@@ -1,5 +1,14 @@
 import { Box, Paper, TextField, Typography } from '@mui/material';
 import { useFormikContext } from 'formik';
+import { Setting } from '../data/settings';
+import {
+  calculateDamageBonus,
+  calculateBuild,
+  calculateMaxHp,
+  calculateMaxSanity,
+  calculateMovementRate,
+  calculateSkillPointsAvailable
+} from '../utils/calculations';
 
 interface Characteristic {
   current: string;
@@ -16,6 +25,18 @@ interface CharacterCharacteristicsValues {
   siz: Characteristic;
   int: Characteristic;
   edu: Characteristic;
+  age: string;
+  damageBonus: string;
+  build: string;
+  hp: string;
+  maxHp: string;
+  sanity: string;
+  maxSanity: string;
+  movementRate: string;
+  skillPoints: {
+    occupation: number;
+    personal: number;
+  };
 }
 
 const calculateDerivedValues = (value: string): { half: string; fifth: string } => {
@@ -81,16 +102,46 @@ const CharacteristicField = ({
   );
 };
 
-export default function CharacterCharacteristics() {
+interface CharacterCharacteristicsProps {
+  setting: Setting;
+}
+
+export default function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
   const { values, handleChange, handleBlur, setFieldValue } = useFormikContext<CharacterCharacteristicsValues>();
 
   const handleCharacteristicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [characteristic, field] = e.target.name.split('.');
     if (field === 'current') {
+      // Update half and fifth values
       const { half, fifth } = calculateDerivedValues(e.target.value);
       setFieldValue(e.target.name, e.target.value);
       setFieldValue(`${characteristic}.half`, half);
       setFieldValue(`${characteristic}.fifth`, fifth);
+
+      // Update derived statistics
+      const str = parseInt(characteristic === 'str' ? e.target.value : values.str.current) || 0;
+      const siz = parseInt(characteristic === 'siz' ? e.target.value : values.siz.current) || 0;
+      const dex = parseInt(characteristic === 'dex' ? e.target.value : values.dex.current) || 0;
+      const con = parseInt(characteristic === 'con' ? e.target.value : values.con.current) || 0;
+      const pow = parseInt(characteristic === 'pow' ? e.target.value : values.pow.current) || 0;
+      const edu = parseInt(characteristic === 'edu' ? e.target.value : values.edu.current) || 0;
+
+      // Calculate and update derived values
+      setFieldValue('damageBonus', calculateDamageBonus(str, siz));
+      setFieldValue('build', calculateBuild(str, siz));
+      setFieldValue('maxHp', calculateMaxHp(con, siz).toString());
+      setFieldValue('hp', calculateMaxHp(con, siz).toString());
+      setFieldValue('maxSanity', calculateMaxSanity(pow).toString());
+      setFieldValue('sanity', calculateMaxSanity(pow).toString());
+      
+      const { occupation, personal } = calculateSkillPointsAvailable(setting.id as any, edu);
+      setFieldValue('skillPoints.occupation', occupation);
+      setFieldValue('skillPoints.personal', personal);
+      
+      if (values.age) {
+        const movementRate = calculateMovementRate(str, dex, siz, setting.id as any, parseInt(values.age));
+        setFieldValue('movementRate', movementRate.toString());
+      }
     }
   };
 
@@ -164,6 +215,94 @@ export default function CharacterCharacteristics() {
           onChange={handleCharacteristicChange}
           onBlur={handleBlur}
         />
+      </Box>
+
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+          Derived Statistics
+        </Typography>
+        <Box sx={{ 
+          display: 'grid', 
+          gap: 3,
+          gridTemplateColumns: { 
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(4, 1fr)'
+          }
+        }}>
+          <TextField
+            fullWidth
+            size="small"
+            id="damageBonus"
+            name="damageBonus"
+            label="Damage Bonus"
+            variant="outlined"
+            value={values.damageBonus}
+            disabled
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="build"
+            name="build"
+            label="Build"
+            variant="outlined"
+            value={values.build}
+            disabled
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="hp"
+            name="hp"
+            label="Hit Points"
+            variant="outlined"
+            value={values.hp}
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="maxHp"
+            name="maxHp"
+            label="Max HP"
+            variant="outlined"
+            value={values.maxHp}
+            disabled
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="sanity"
+            name="sanity"
+            label="Sanity"
+            variant="outlined"
+            value={values.sanity}
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="maxSanity"
+            name="maxSanity"
+            label="Max Sanity"
+            variant="outlined"
+            value={values.maxSanity}
+            disabled
+          />
+          <TextField
+            fullWidth
+            size="small"
+            id="movementRate"
+            name="movementRate"
+            label="Movement Rate"
+            variant="outlined"
+            value={values.movementRate}
+            disabled
+          />
+        </Box>
       </Box>
     </Box>
   );
