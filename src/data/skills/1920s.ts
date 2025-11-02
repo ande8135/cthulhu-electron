@@ -27,6 +27,7 @@ export const skills1920s = [
   { name: "Natural World", base: 10, category: "General" },
   { name: "Navigate", base: 10, category: "General" },
   { name: "Occult", base: 5, category: "General" },
+  { name: "Cthulhu Mythos", base: 0, category: "General" },
   
   // Investigation Skills
   { name: "Library Use", base: 20, category: "Investigation" },

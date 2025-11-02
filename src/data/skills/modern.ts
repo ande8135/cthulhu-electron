@@ -25,6 +25,7 @@ export const skillsModern: Skill[] = [
   { name: 'History', base: 20, category: 'Academic' },
   { name: 'Law', base: 5, category: 'Academic' },
   { name: 'Occult', base: 5, category: 'Academic' },
+  { name: 'Cthulhu Mythos', base: 0, category: 'Academic' },
   { name: 'Science', base: 1, category: 'Academic' },
 
   // Technical Skills

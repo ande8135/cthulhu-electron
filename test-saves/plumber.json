@@ -1,0 +1,497 @@
+{
+  "setting": "1920s",
+  "values": {
+    "name": "John Smith",
+    "occupation": "Plumber",
+    "age": "38",
+    "sex": "M",
+    "residence": "Hudson, WI",
+    "birthplace": "Superior, WI",
+    "str": {
+      "current": "75",
+      "half": "37",
+      "fifth": "15"
+    },
+    "con": {
+      "current": "75",
+      "half": "37",
+      "fifth": "15"
+    },
+    "dex": {
+      "current": "70",
+      "half": "35",
+      "fifth": "14"
+    },
+    "app": {
+      "current": "45",
+      "half": "22",
+      "fifth": "9"
+    },
+    "pow": {
+      "current": "50",
+      "half": "25",
+      "fifth": "10"
+    },
+    "siz": {
+      "current": "80",
+      "half": "40",
+      "fifth": "16"
+    },
+    "int": {
+      "current": "60",
+      "half": "30",
+      "fifth": "12"
+    },
+    "edu": {
+      "current": "55",
+      "half": "27",
+      "fifth": "11"
+    },
+    "skills": {
+      "Fighting (Brawl)": {
+        "base": 25,
+        "occupation": 0,
+        "personal": 0,
+        "final": 25,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Firearms (Handgun)": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Firearms (Rifle/Shotgun)": {
+        "base": 25,
+        "occupation": 0,
+        "personal": 0,
+        "final": 25,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Throw": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Charm": {
+        "base": 15,
+        "occupation": 15,
+        "personal": 25,
+        "final": 15,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Fast Talk": {
+        "base": 5,
+        "occupation": 15,
+        "personal": 30,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Intimidate": {
+        "base": 15,
+        "occupation": 0,
+        "personal": 0,
+        "final": 15,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Persuade": {
+        "base": 10,
+        "occupation": 4,
+        "personal": 16,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Credit Rating": {
+        "base": 0,
+        "occupation": 0,
+        "personal": 0,
+        "final": 0,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Climb": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Dodge": {
+        "base": 0,
+        "occupation": 0,
+        "personal": 0,
+        "final": 0,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Drive Auto": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Jump": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Ride": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Swim": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "First Aid": {
+        "base": 30,
+        "occupation": 0,
+        "personal": 0,
+        "final": 30,
+        "checked": false,
+        "adjustment": 0
+      },
+      "History": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Language (Own)": {
+        "base": 0,
+        "occupation": 0,
+        "personal": 0,
+        "final": 0,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Natural World": {
+        "base": 10,
+        "occupation": 0,
+        "personal": 0,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Navigate": {
+        "base": 10,
+        "occupation": 0,
+        "personal": 0,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Occult": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Library Use": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Listen": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Psychology": {
+        "base": 10,
+        "occupation": 0,
+        "personal": 0,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Spot Hidden": {
+        "base": 25,
+        "occupation": 0,
+        "personal": 0,
+        "final": 25,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Track": {
+        "base": 10,
+        "occupation": 0,
+        "personal": 0,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Archaeology": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Astronomy": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Biology": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Chemistry": {
+        "base": 1,
+        "occupation": 25,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Geology": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Medicine": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Physics": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Disguise": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Hide": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Locksmith": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Sleight of Hand": {
+        "base": 10,
+        "occupation": 40,
+        "personal": 15,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Stealth": {
+        "base": 20,
+        "occupation": 0,
+        "personal": 0,
+        "final": 20,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Accounting": {
+        "base": 5,
+        "occupation": 1,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Electrical Repair": {
+        "base": 10,
+        "occupation": 25,
+        "personal": 15,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Mechanical Repair": {
+        "base": 10,
+        "occupation": 60,
+        "personal": 10,
+        "final": 10,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Operate Heavy Machinery": {
+        "base": 1,
+        "occupation": 40,
+        "personal": 9,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Art/Craft (Drawing)": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Art/Craft (Painting)": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Art/Craft (Photography)": {
+        "base": 5,
+        "occupation": 0,
+        "personal": 0,
+        "final": 5,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Language (Other) (Latin)": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Language (Other) (Greek)": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      },
+      "Language (Other) (Arabic)": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
+      }
+    },
+    "skillPoints": {
+      "occupation": 220,
+      "personal": 110
+    },
+    "movementRate": "7",
+    "bonusSkillPoints": 5,
+    "weapons": [
+      {
+        "name": "Punch/Strike",
+        "skill": "Fighting (Brawl)",
+        "damage": "1d3 + DB",
+        "range": "Touch",
+        "attacks": "1",
+        "ammo": "-",
+        "malfunction": "-",
+        "era": [
+          "1920s",
+          "modern"
+        ],
+        "custom": false
+      },
+      {
+        "name": "Switchblade",
+        "skill": "Fighting (Blade)",
+        "damage": "1d4 + DB",
+        "range": "Touch",
+        "attacks": "1",
+        "ammo": "-",
+        "malfunction": "-",
+        "era": [
+          "1920s"
+        ],
+        "custom": false
+      }
+    ],
+    "damageBonus": "+1d4",
+    "build": "1",
+    "hp": "15",
+    "maxHp": "15",
+    "sanity": "99",
+    "maxSanity": "99",
+    "description": "He's a plumber",
+    "ideology": "Poo is the enemy of clean",
+    "significantPeople": "Mr. Clean",
+    "meaningfulLocations": "The porcelain throne",
+    "treasuredPossessions": "Plunger, Drain snake",
+    "traits": "Smelly",
+    "injuries": "Oh he's seen some shit",
+    "phobias": "Self-unclogging toilets",
+    "arcane": "nope",
+    "encounters": "A fatberg talked to him once",
+    "possessions": [
+      {
+        "item": "Plunger",
+        "notes": "handy-dandy"
+      }
+    ],
+    "assets": "Home, Car",
+    "cash": "100",
+    "spendingLevel": "5"
+  }
+}

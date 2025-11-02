@@ -1,5 +1,6 @@
 import { Box, Paper, TextField, Typography } from '@mui/material';
 import { useFormikContext } from 'formik';
+import { memo } from 'react';
 import { Setting } from '../data/settings';
 import {
   calculateDamageBonus,
@@ -106,7 +107,7 @@ interface CharacterCharacteristicsProps {
   setting: Setting;
 }
 
-export default function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
+function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
   const { values, handleChange, handleBlur, setFieldValue } = useFormikContext<CharacterCharacteristicsValues>();
 
   const handleCharacteristicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,8 +132,21 @@ export default function CharacterCharacteristics({ setting }: CharacterCharacter
       setFieldValue('build', calculateBuild(str, siz));
       setFieldValue('maxHp', calculateMaxHp(con, siz).toString());
       setFieldValue('hp', calculateMaxHp(con, siz).toString());
-      setFieldValue('maxSanity', calculateMaxSanity(pow).toString());
-      setFieldValue('sanity', calculateMaxSanity(pow).toString());
+      // Starting Sanity equals POW (7e). Max Sanity = 99 - Cthulhu Mythos.
+      const mythosVal = (() => {
+        try {
+          const skills: any = (values as any).skills || {};
+          const cm = skills['Cthulhu Mythos'] || {};
+          // prefer final, fallback to occupation/personal/base sum
+          const final = parseInt(cm.final ?? cm.base ?? 0) || 0;
+          return Math.max(0, Math.min(99, final));
+        } catch {
+          return 0;
+        }
+      })();
+      const maxSan = Math.max(0, 99 - mythosVal);
+      setFieldValue('sanity', pow.toString());
+      setFieldValue('maxSanity', maxSan.toString());
       
       const { occupation, personal } = calculateSkillPointsAvailable(setting.id as any, edu);
       setFieldValue('skillPoints.occupation', occupation);
@@ -307,3 +321,5 @@ export default function CharacterCharacteristics({ setting }: CharacterCharacter
     </Box>
   );
 }
+
+export default memo(CharacterCharacteristics);

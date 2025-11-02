@@ -25,6 +25,7 @@ export const skillsRegency: Skill[] = [
   { name: 'Medicine', base: 1, category: 'Academic' },
   { name: 'Natural Philosophy', base: 1, category: 'Academic', eraSpecific: true },
   { name: 'Occult', base: 5, category: 'Academic' },
+  { name: 'Cthulhu Mythos', base: 0, category: 'Academic' },
 
   // Physical Skills
   { name: 'Climb', base: 20, category: 'Physical' },

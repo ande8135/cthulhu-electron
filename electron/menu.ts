@@ -10,6 +10,11 @@ export function createApplicationMenu(win: BrowserWindow) {
   };
 
   const handleOpen = async () => {
+    if (!win || win.isDestroyed()) {
+      dialog.showErrorBox('Error', 'Window is not available');
+      return;
+    }
+
     try {
       const result = await dialog.showOpenDialog(win, {
         filters: [{ name: 'JSON', extensions: ['json'] }],
@@ -17,25 +22,10 @@ export function createApplicationMenu(win: BrowserWindow) {
       });
 
       if (!result.canceled && result.filePaths.length > 0) {
-        try {
-          const data = await fs.readFile(result.filePaths[0], 'utf-8');
-          const jsonData = JSON.parse(data);
-          
-          // Update the form in the renderer
-          await win.webContents.executeJavaScript(`
-            if (window.formikRef && window.formikRef.current) {
-              window.formikRef.current.resetForm({ 
-                values: { 
-                  ...${JSON.stringify(jsonData)}, 
-                  filePath: '${result.filePaths[0]}' 
-                } 
-              });
-            }
-          `);
-        } catch (err) {
-          console.error('Error loading data:', err);
-          dialog.showErrorBox('Load Error', 'Failed to load character data');
-        }
+        const filePath = result.filePaths[0];
+        
+        // Send message to renderer to load the file
+        win.webContents.send('file:load', filePath);
       }
     } catch (error) {
       console.error('Error in open dialog:', error);
@@ -44,42 +34,19 @@ export function createApplicationMenu(win: BrowserWindow) {
   };
 
   const handleSave = async () => {
+    if (!win || win.isDestroyed()) {
+      dialog.showErrorBox('Error', 'Window is not available');
+      return;
+    }
+
     try {
       const result = await dialog.showSaveDialog(win, {
         filters: [{ name: 'JSON', extensions: ['json'] }]
       });
 
       if (!result.canceled && result.filePath) {
-        try {
-          // Get the form data from the renderer
-          const formDataJson = await win.webContents.executeJavaScript(`(function(){
-            try {
-              if (window.formikRef && window.formikRef.current) {
-                return JSON.stringify(window.formikRef.current.values || null);
-              }
-            } catch (e) {
-              return null;
-            }
-            return null;
-          })()`);
-
-          if (formDataJson) {
-            const formData = JSON.parse(formDataJson);
-            // ensure bonusSkillPoints is present (default to 0)
-            if (typeof formData.bonusSkillPoints === 'undefined') formData.bonusSkillPoints = 0;
-            await fs.writeFile(result.filePath, JSON.stringify(formData, null, 2));
-            await win.webContents.executeJavaScript(`
-              if (window.formikRef && window.formikRef.current) {
-                window.formikRef.current.setFieldValue('filePath', '${result.filePath}');
-              }
-            `);
-          } else {
-            throw new Error('No form data available');
-          }
-        } catch (err) {
-          console.error('Error saving data:', err);
-          dialog.showErrorBox('Save Error', 'Failed to save character data');
-        }
+        // Send message to renderer to save the file
+        win.webContents.send('file:save', result.filePath);
       }
     } catch (error) {
       console.error('Error in save dialog:', error);

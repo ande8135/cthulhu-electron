@@ -15,15 +15,17 @@ import {
   Checkbox,
   FormControlLabel,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Button
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import { useFormikContext } from 'formik';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { skillsList } from '../data/skills';
+type SkillDef = { name: string; base: number; category: string; specialization?: string; eraSpecific?: boolean };
 
 interface SkillValue {
   base: number;
@@ -40,7 +42,7 @@ interface CharacterSkillsValues {
   };
 }
 
-const PlayModeSkillField = ({
+const PlayModeSkillField = memo(({
   name,
   base,
   value,
@@ -57,7 +59,7 @@ const PlayModeSkillField = ({
   let calculatedBase = base;
   if (name === 'Dodge') {
     calculatedBase = Math.floor(parseInt(values.dex?.current || '0') / 2);
-  } else if (name === 'Language (Own)') {
+  } else if (name === 'Language (Own)' || name === 'Own Language') {
     calculatedBase = parseInt(values.edu?.current || '0');
   }
 
@@ -125,9 +127,9 @@ const PlayModeSkillField = ({
       </Typography>
     </Box>
   );
-};
+});
 
-const SkillField = ({
+const SkillField = memo(({
   name,
   base,
   value,
@@ -150,7 +152,7 @@ const SkillField = ({
   let calculatedBase = base;
   if (name === 'Dodge') {
     calculatedBase = Math.floor(parseInt(values.dex?.current || '0') / 2);
-  } else if (name === 'Language (Own)') {
+  } else if (name === 'Language (Own)' || name === 'Own Language') {
     calculatedBase = parseInt(values.edu?.current || '0');
   }
 
@@ -242,7 +244,7 @@ const SkillField = ({
       </Box>
     </Box>
   );
-};
+});
 
 
 
@@ -257,6 +259,40 @@ export default function CharacterSkills() {
     acc[skill.category].push(skill);
     return acc;
   }, {} as { [key: string]: typeof skillsList });
+
+  // Include dynamically added language skills (custom languages) into the Languages category
+  const renderSkillsByCategory = (() => {
+    const cloned: { [key: string]: SkillDef[] } = Object.keys(skillsByCategory).reduce((acc, key) => {
+      acc[key] = [...(skillsByCategory as any)[key]] as SkillDef[];
+      return acc;
+    }, {} as { [key: string]: SkillDef[] });
+
+    const baseLangList: SkillDef[] = (cloned['Languages'] || []) as SkillDef[];
+    const baseLangKeys = new Set(
+      baseLangList.map(s => s.name + (s.specialization ? ` ${s.specialization}` : ''))
+    );
+
+    const dynamicLangs: SkillDef[] = [];
+    const langKeyRegex = /^(?:Language \(Other\)|Other Language)\s*\((.+)\)$/;
+    Object.keys(values.skills || {}).forEach((key) => {
+      if (baseLangKeys.has(key)) return;
+      const match = key.match(langKeyRegex);
+      if (match) {
+        const isOtherLanguage = key.startsWith('Other Language');
+        const specialization = `(${match[1]})`;
+        dynamicLangs.push({
+          name: isOtherLanguage ? 'Other Language' : 'Language (Other)',
+          base: 1,
+          category: 'Languages',
+          specialization
+        } as SkillDef);
+      }
+    });
+
+    if (!cloned['Languages']) cloned['Languages'] = [] as SkillDef[];
+    cloned['Languages'] = ([...(cloned['Languages'] as SkillDef[]), ...dynamicLangs]);
+    return cloned as { [key: string]: SkillDef[] };
+  })();
 
   // Calculate pools according to CoC7 rules (assumed defaults):
   // Occupational Points = EDU * 4
@@ -279,7 +315,7 @@ export default function CharacterSkills() {
   const remainingBonus = Math.max(0, bonusPoints - totalOver);
 
   // Helper to clamp requested changes so we never exceed available pools + bonus
-  const handleOccupationChange = (skillKey: string, newVal: number) => {
+  const handleOccupationChange = useCallback((skillKey: string, newVal: number) => {
     const currentOcc = parseInt(values.skills?.[skillKey]?.occupation || 0) || 0;
     const delta = newVal - currentOcc;
 
@@ -295,7 +331,7 @@ export default function CharacterSkills() {
       if (skillKey === 'Dodge') {
         return Math.floor((parseInt(values.dex?.current || '0') || 0) / 2);
       }
-      if (skillKey.includes('Language (Own)')) {
+      if (skillKey.includes('Language (Own)') || skillKey.includes('Own Language')) {
         return parseInt(values.edu?.current || '0') || rawBase;
       }
       return rawBase;
@@ -325,9 +361,9 @@ export default function CharacterSkills() {
       setClampMessage(`${skillKey} occupation limited to ${finalVal} because of point pools, bonus points, or the 80-point cap.`);
       setSnackOpen(true);
     }
-  };
+  }, [values.skills, values.dex?.current, values.edu?.current, totalOccupationSpent, totalPersonalSpent, occupationalPoints, personalPoints, bonusPoints, overOccupation, overPersonal, setFieldValue]);
 
-  const handlePersonalChange = (skillKey: string, newVal: number) => {
+  const handlePersonalChange = useCallback((skillKey: string, newVal: number) => {
     const currentPer = parseInt(values.skills?.[skillKey]?.personal || 0) || 0;
     const delta = newVal - currentPer;
 
@@ -342,7 +378,7 @@ export default function CharacterSkills() {
       if (skillKey === 'Dodge') {
         return Math.floor((parseInt(values.dex?.current || '0') || 0) / 2);
       }
-      if (skillKey.includes('Language (Own)')) {
+      if (skillKey.includes('Language (Own)') || skillKey.includes('Own Language')) {
         return parseInt(values.edu?.current || '0') || rawBase;
       }
       return rawBase;
@@ -368,32 +404,62 @@ export default function CharacterSkills() {
       setClampMessage(`${skillKey} personal limited to ${finalVal} because of point pools, bonus points, or the 80-point cap.`);
       setSnackOpen(true);
     }
-  };
+  }, [values.skills, values.dex?.current, values.edu?.current, totalOccupationSpent, totalPersonalSpent, occupationalPoints, personalPoints, bonusPoints, overOccupation, overPersonal, setFieldValue]);
 
   // Snackbar state for validation messages
   const [clampMessage, setClampMessage] = useState<string | null>(null);
   const [snackOpen, setSnackOpen] = useState(false);
 
-  const [viewMode, setViewMode] = useState<'create' | 'play'>('create');
+  // Check if there are points remaining to spend
+  const hasPointsRemaining = 
+    (occupationalPoints - totalOccupationSpent) > 0 || 
+    (personalPoints - totalPersonalSpent) > 0 || 
+    remainingBonus > 0;
+
+  const [viewMode, setViewMode] = useState<'create' | 'play'>(() => 
+    hasPointsRemaining ? 'create' : 'play'
+  );
+
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [expandAll, setExpandAll] = useState(false);
+
+  const toggleExpandAll = () => {
+    if (expandAll) {
+      setExpandedSections(new Set());
+    } else {
+      setExpandedSections(new Set(Object.keys(skillsByCategory)));
+    }
+    setExpandAll(!expandAll);
+  };
 
   return (
     <>
       <Box sx={{ mt: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5">Skills</Typography>
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={(_, newValue) => newValue && setViewMode(newValue)}
-          size="small"
-        >
-          <ToggleButton value="create" sx={{ px: 2 }}>
-            Create
-          </ToggleButton>
-          <ToggleButton value="play" sx={{ px: 2 }}>
-            Play
-          </ToggleButton>
-        </ToggleButtonGroup>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={toggleExpandAll}
+            sx={{ textTransform: 'none' }}
+          >
+            {expandAll ? 'Collapse All' : 'Expand All'}
+          </Button>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, newValue) => newValue && setViewMode(newValue)}
+            size="small"
+          >
+            <ToggleButton value="create" sx={{ px: 2 }}>
+              Create
+            </ToggleButton>
+            <ToggleButton value="play" sx={{ px: 2 }}>
+              Play
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
       </Box>
       {viewMode === 'create' && (
         <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
@@ -451,8 +517,22 @@ export default function CharacterSkills() {
       )}
 
       <Paper elevation={1} sx={{ p: 2 }}>
-        {Object.entries(skillsByCategory).map(([category, skills]) => (
-          <Accordion key={category}>
+        {Object.entries(renderSkillsByCategory).map(([category, skills]) => (
+            <Accordion 
+              key={category}
+              expanded={expandedSections.has(category)}
+              onChange={(_, isExpanded) => {
+                const newExpanded = new Set(expandedSections);
+                if (isExpanded) {
+                  newExpanded.add(category);
+                } else {
+                  newExpanded.delete(category);
+                }
+                setExpandedSections(newExpanded);
+                // Update expandAll state based on whether all are expanded
+                setExpandAll(newExpanded.size === Object.keys(renderSkillsByCategory).length);
+              }}
+            >
             <AccordionSummary 
               expandIcon={<ExpandMoreIcon />}
               sx={{
@@ -465,6 +545,43 @@ export default function CharacterSkills() {
               <Typography variant="h6">{category}</Typography>
             </AccordionSummary>
             <AccordionDetails>
+              {category === 'Languages' && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<AddIcon />}
+                    onClick={() => {
+                      const baseList = (renderSkillsByCategory['Languages'] || []) as SkillDef[];
+                      const usesOtherLanguage = baseList.some(s => s.name === 'Other Language');
+                      const promptName = window.prompt('Add language (e.g., French)');
+                      if (!promptName) return;
+                      const clean = String(promptName).trim();
+                      if (!clean) return;
+                      const key = usesOtherLanguage ? `Other Language (${clean})` : `Language (Other) (${clean})`;
+                      if (values.skills?.[key]) {
+                        setClampMessage(`${key} already exists.`);
+                        setSnackOpen(true);
+                        return;
+                      }
+                      setFieldValue(`skills.${key}` as any, {
+                        base: 1,
+                        occupation: 0,
+                        personal: 0,
+                        final: 1,
+                        checked: false,
+                        adjustment: 0
+                      });
+                      // Expand Languages section if not already
+                      const newExpanded = new Set(expandedSections);
+                      newExpanded.add('Languages');
+                      setExpandedSections(newExpanded);
+                    }}
+                  >
+                    Add Language
+                  </Button>
+                </Box>
+              )}
               <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',

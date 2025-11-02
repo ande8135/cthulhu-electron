@@ -43,6 +43,7 @@ export const skillsDarkAges = [
   { name: "Medicine", base: 5, category: "Knowledge" },
   { name: "Philosophy", base: 5, category: "Knowledge", eraSpecific: true },
   { name: "Theology", base: 20, category: "Knowledge", eraSpecific: true },
+  { name: "Cthulhu Mythos", base: 0, category: "Knowledge" },
   
   // Stealth Skills
   { name: "Disguise", base: 5, category: "Stealth" },

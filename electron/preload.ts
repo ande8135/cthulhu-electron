@@ -4,11 +4,19 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('api', {
   showSaveDialog: () => ipcRenderer.invoke('dialog:showSave'),
   showOpenDialog: () => ipcRenderer.invoke('dialog:showOpen'),
-  saveFile: (filePath: string, data: any) => ipcRenderer.invoke('file:save', { filePath, ...data }),
+  saveFile: (filePath: string, data: any) => ipcRenderer.invoke('file:save', filePath, data),
   loadFile: (filePath: string) => ipcRenderer.invoke('file:load', filePath),
   getRecentFiles: () => ipcRenderer.invoke('recent:get'),
   addRecentFile: (filePath: string) => ipcRenderer.invoke('recent:add', filePath),
-  newWindow: () => ipcRenderer.invoke('window:new')
+  newWindow: () => ipcRenderer.invoke('window:new'),
+  
+  // Listen for save/load events from menu
+  onFileSave: (callback: (filePath: string) => void) => {
+    ipcRenderer.on('file:save', (_, filePath) => callback(filePath));
+  },
+  onFileLoad: (callback: (filePath: string) => void) => {
+    ipcRenderer.on('file:load', (_, filePath) => callback(filePath));
+  }
 });
 
 // --------- Preload scripts loading ---------

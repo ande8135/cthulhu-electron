@@ -86,7 +86,6 @@ const createWindow = async () => {
 
   if (isDev) {
     await win.loadURL("http://localhost:5173");
-    win.webContents.openDevTools();
   } else {
     // Load built index.html
     await win.loadFile(path.join(__dirname, "../index.html"));
@@ -127,17 +126,53 @@ ipcMain.handle('dialog:showOpen', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('file:save', async (_, data) => {
-  const { filePath, ...characterData } = data;
-  await fs.writeFile(filePath, JSON.stringify(characterData, null, 2));
-  await addRecentFile(filePath);
-  return true;
+ipcMain.handle('file:save', async (_, filePath, characterData) => {
+  try {
+    await fs.writeFile(filePath, JSON.stringify(characterData, null, 2));
+    await addRecentFile(filePath);
+    return { success: true, filePath };
+  } catch (error) {
+    console.error('Error saving file:', error);
+    return { success: false, error: String(error) };
+  }
 });
 
 ipcMain.handle('file:load', async (_, filePath) => {
-  const content = await fs.readFile(filePath, 'utf-8');
-  await addRecentFile(filePath);
-  return { ...JSON.parse(content), filePath };
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    await addRecentFile(filePath);
+    return { success: true, data: JSON.parse(content) };
+  } catch (error) {
+    console.error('Error loading file:', error);
+    return { success: false, error: String(error) };
+  }
+});
+
+ipcMain.handle('character:getData', async (event) => {
+  // Request character data from renderer
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) {
+    return { success: false, error: 'Window not available' };
+  }
+  
+  try {
+    const data = await win.webContents.executeJavaScript(`
+      (function() {
+        if (window.formikRef && window.formikRef.current) {
+          return window.formikRef.current.values;
+        }
+        return null;
+      })()
+    `);
+    
+    if (data) {
+      return { success: true, data };
+    } else {
+      return { success: false, error: 'No form data available' };
+    }
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
 });
 
 ipcMain.handle('recent:get', async () => {

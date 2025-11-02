@@ -147,22 +147,6 @@ const createSettingTheme = (setting: typeof settings[0]) => createTheme({
 
 import { createValidationSchema } from './validation/schema';
 
-// Memoize initial values
-const createInitialSkills = () => {
-  const cached = {};
-  return () => {
-    if (Object.keys(cached).length === 0) {
-      Object.assign(cached, Object.fromEntries(
-        skillsList.map(skill => [
-          skill.name + (skill.specialization ? ` ${skill.specialization}` : ''),
-          { base: skill.base, occupation: 0, personal: 0, final: skill.base, checked: false, adjustment: 0 }
-        ])
-      ));
-    }
-    return cached;
-  };
-};
-
 const getInitialSkills = (era: string) => {
   const eraSkills = skillsByEra[era] || skillsByEra['1920s'];
   return Object.fromEntries(
@@ -226,12 +210,15 @@ export default function App() {
   const formikRef = useRef<any>(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [selectedSetting, setSelectedSetting] = useState(settings[0]);
+  const isLoadingFileRef = useRef(false);
 
   useEffect(() => {
     // Reset form with new initial values when setting changes
-    if (formikRef.current && !showWelcome) {
+    // BUT NOT when we're loading a file (the file load will handle the reset)
+    if (formikRef.current && !showWelcome && !isLoadingFileRef.current) {
       formikRef.current.resetForm({ values: getInitialValues(selectedSetting) });
     }
+    isLoadingFileRef.current = false;
   }, [selectedSetting, showWelcome]);
 
   useEffect(() => {
@@ -242,6 +229,51 @@ export default function App() {
     const api = (window as any).api;
     if (!api) return;
 
+    // Listen for save/load events from menu
+    api.onFileSave(async (filePath: string) => {
+      if (formikRef.current) {
+        const dataToSave = {
+          setting: selectedSetting.id,
+          values: formikRef.current.values
+        };
+        const result = await api.saveFile(filePath, dataToSave);
+        if (result.success) {
+          console.log('File saved successfully');
+        } else {
+          console.error('Failed to save file:', result.error);
+        }
+      }
+    });
+
+    api.onFileLoad(async (filePath: string) => {
+      console.log('onFileLoad triggered with path:', filePath);
+      isLoadingFileRef.current = true;
+      const result = await api.loadFile(filePath);
+      console.log('Load result:', result);
+      if (result.success && formikRef.current) {
+        const data = result.data;
+        console.log('Data loaded:', data);
+        if (data.setting) {
+          const newSetting = settings.find(s => s.id === data.setting) || settings[0];
+          console.log('Setting found:', newSetting);
+          setSelectedSetting(newSetting);
+          // Wait for setting to update before resetting form
+          setTimeout(() => {
+            if (formikRef.current) {
+              console.log('Resetting form with values:', data.values || data);
+              formikRef.current.resetForm({ values: data.values || data });
+            }
+          }, 0);
+        } else {
+          console.log('Resetting form with values:', data.values || data);
+          formikRef.current.resetForm({ values: data.values || data });
+        }
+      } else {
+        console.error('Failed to load file:', result.error);
+        isLoadingFileRef.current = false;
+      }
+    });
+
     // Listen for keyboard shortcuts
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
@@ -250,10 +282,14 @@ export default function App() {
             e.preventDefault();
             const filePath = await api.showSaveDialog();
             if (filePath && formikRef.current) {
-              await api.saveFile(filePath, {
+              const dataToSave = {
                 setting: selectedSetting.id,
                 values: formikRef.current.values
-              });
+              };
+              const result = await api.saveFile(filePath, dataToSave);
+              if (!result.success) {
+                console.error('Failed to save file:', result.error);
+              }
             }
             break;
           }
@@ -261,13 +297,25 @@ export default function App() {
             e.preventDefault();
             const filePath = await api.showOpenDialog();
             if (filePath) {
-              const data = await api.loadFile(filePath);
-              if (data && formikRef.current) {
+              isLoadingFileRef.current = true;
+              const result = await api.loadFile(filePath);
+              if (result.success && formikRef.current) {
+                const data = result.data;
                 if (data.setting) {
                   const newSetting = settings.find(s => s.id === data.setting) || settings[0];
                   setSelectedSetting(newSetting);
+                  // Wait for setting to update before resetting form
+                  setTimeout(() => {
+                    if (formikRef.current) {
+                      formikRef.current.resetForm({ values: data.values || data });
+                    }
+                  }, 0);
+                } else {
+                  formikRef.current.resetForm({ values: data.values || data });
                 }
-                formikRef.current.resetForm({ values: data.values || data });
+              } else {
+                console.error('Failed to load file:', result.error);
+                isLoadingFileRef.current = false;
               }
             }
             break;
@@ -315,6 +363,36 @@ export default function App() {
         onSelectSetting={(setting) => {
           setSelectedSetting(setting);
           setShowWelcome(false);
+        }}
+        onOpenCharacter={async () => {
+          const api = (window as any).api;
+          if (!api) return;
+
+          const filePath = await api.showOpenDialog();
+          if (filePath) {
+            isLoadingFileRef.current = true;
+            const result = await api.loadFile(filePath);
+            if (result.success && formikRef.current) {
+              const data = result.data;
+              if (data.setting) {
+                const newSetting = settings.find(s => s.id === data.setting) || settings[0];
+                setSelectedSetting(newSetting);
+                // Wait for setting to update before resetting form
+                setTimeout(() => {
+                  if (formikRef.current) {
+                    formikRef.current.resetForm({ values: data.values || data });
+                  }
+                  setShowWelcome(false);
+                }, 0);
+              } else {
+                formikRef.current.resetForm({ values: data.values || data });
+                setShowWelcome(false);
+              }
+            } else {
+              console.error('Failed to load file:', result.error);
+              isLoadingFileRef.current = false;
+            }
+          }
         }}
       />
       <Box 
@@ -378,6 +456,8 @@ export default function App() {
               initialValues={getInitialValues(selectedSetting)}
               validationSchema={createValidationSchema(selectedSetting.id)}
               onSubmit={handleSubmit}
+              validateOnChange={false}
+              validateOnBlur={false}
             >
               <Form>
                 <Box sx={{ display: 'grid', gap: 5 }}>

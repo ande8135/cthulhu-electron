@@ -1,5 +1,6 @@
 import { Box, TextField } from '@mui/material';
 import { useFormikContext } from 'formik';
+import { memo } from 'react';
 
 import { Setting } from '../data/settings';
 
@@ -18,7 +19,7 @@ interface CharacterBasicInfoValues {
   socialClass?: string;
 }
 
-export default function CharacterBasicInfo({ setting }: CharacterBasicInfoProps) {
+function CharacterBasicInfo({ setting }: CharacterBasicInfoProps) {
   const { values, handleChange, handleBlur } = useFormikContext<CharacterBasicInfoValues>();
 
   return (
@@ -116,3 +117,5 @@ export default function CharacterBasicInfo({ setting }: CharacterBasicInfoProps)
     </Box>
   );
 }
+
+export default memo(CharacterBasicInfo);
