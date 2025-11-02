@@ -431,6 +431,14 @@
         "final": 1,
         "checked": false,
         "adjustment": 0
+      },
+      "Language (Other) (Blah)": {
+        "base": 1,
+        "occupation": 0,
+        "personal": 0,
+        "final": 1,
+        "checked": false,
+        "adjustment": 0
       }
     },
     "skillPoints": {

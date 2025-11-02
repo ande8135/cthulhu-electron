@@ -43,7 +43,7 @@ export const skillsRegency: Skill[] = [
   { name: 'Throw', base: 20, category: 'Combat' },
 
   // Languages
-  { name: 'Own Language', base: 40, category: 'Languages' },
+  { name: 'Own Language', base: 0, category: 'Languages' }, // EDU-based in UI
   { name: 'French', base: 1, category: 'Languages', eraSpecific: true },
   { name: 'Latin', base: 1, category: 'Languages', eraSpecific: true },
   { name: 'Greek', base: 1, category: 'Languages', eraSpecific: true },

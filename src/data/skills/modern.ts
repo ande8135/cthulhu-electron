@@ -53,6 +53,6 @@ export const skillsModern: Skill[] = [
   { name: 'Survival', base: 10, category: 'Survival' },
   
   // Languages
-  { name: 'Own Language', base: 40, category: 'Languages' },
+  { name: 'Own Language', base: 0, category: 'Languages' }, // EDU-based in UI
   { name: 'Other Language', base: 1, category: 'Languages' },
 ];

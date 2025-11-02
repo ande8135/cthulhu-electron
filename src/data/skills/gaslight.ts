@@ -49,6 +49,6 @@ export const skillsGaslight: Skill[] = [
   { name: 'Throw', base: 20, category: 'Combat' },
 
   // Languages
-  { name: 'Own Language', base: 40, category: 'Languages' },
+  { name: 'Own Language', base: 0, category: 'Languages' }, // EDU-based in UI
   { name: 'Other Language', base: 1, category: 'Languages' },
 ];

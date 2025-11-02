@@ -1,6 +1,6 @@
 import { Box, Container, Paper, ThemeProvider, createTheme, Typography, GlobalStyles } from '@mui/material';
 import { useRef, useEffect, lazy, Suspense, useState, useMemo } from 'react';
-import { Formik, Form } from 'formik';
+import { Formik, Form, useFormikContext } from 'formik';
 
 // Import all fonts
 import '@fontsource/unifrakturmaguntia';
@@ -460,6 +460,7 @@ export default function App() {
               validateOnBlur={false}
             >
               <Form>
+                <TitleUpdater eraName={selectedSetting.name} />
                 <Box sx={{ display: 'grid', gap: 5 }}>
                   <CharacterBasicInfo setting={selectedSetting} />
                   <CharacterCharacteristics setting={selectedSetting} />
@@ -468,7 +469,7 @@ export default function App() {
                       <CircularProgress />
                     </Box>
                   }>
-                    <CharacterSkills />
+                    <CharacterSkills setting={selectedSetting} />
                     <CharacterCombat setting={selectedSetting} />
                     <CharacterBackstory />
                     <CharacterInventory />
@@ -481,4 +482,17 @@ export default function App() {
       </Box>
     </ThemeProvider>
   );
+}
+
+// Small helper component to update the Electron window title based on era and investigator name
+function TitleUpdater({ eraName }: { eraName: string }) {
+  const { values } = useFormikContext<any>();
+  useEffect(() => {
+    const api = (window as any).api;
+    if (!api || typeof api.setTitle !== 'function') return;
+    const name = values?.name || '';
+    const title = `Call of Cthulhu - ${eraName}${name ? ' - ' + name : ''}`;
+    api.setTitle(title);
+  }, [values?.name, eraName]);
+  return null;
 }

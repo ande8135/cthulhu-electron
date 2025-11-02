@@ -21,10 +21,10 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import { useFormikContext } from 'formik';
-import { useState, memo, useCallback } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { skillsList } from '../data/skills';
+import { skillsByEra } from '../data/skills/index';
 type SkillDef = { name: string; base: number; category: string; specialization?: string; eraSpecific?: boolean };
 
 interface SkillValue {
@@ -136,7 +136,8 @@ const SkillField = memo(({
   onOccupationChange,
   onPersonalChange,
   onCheckedChange,
-  onAdjustmentChange
+  onAdjustmentChange,
+  onDelete
 }: {
   name: string;
   base: number;
@@ -145,6 +146,7 @@ const SkillField = memo(({
   onPersonalChange: (val: number) => void;
   onCheckedChange: (checked: boolean) => void;
   onAdjustmentChange: (val: number) => void;
+  onDelete?: () => void;
 }) => {
   const { values } = useFormikContext<any>();
 
@@ -163,7 +165,7 @@ const SkillField = memo(({
   return (
     <Box sx={{
       display: 'grid',
-      gridTemplateColumns: '40px minmax(200px, 1fr) 120px 120px 180px',
+      gridTemplateColumns: '40px minmax(200px, 1fr) 120px 120px 180px 40px',
       gap: 3,
       alignItems: 'center',
       padding: '4px 8px',
@@ -242,26 +244,61 @@ const SkillField = memo(({
           </Typography>
         )}
       </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {onDelete ? (
+          <IconButton 
+            size="small" 
+            color="error" 
+            onClick={onDelete} 
+            aria-label={`Delete ${name}`}
+            sx={{
+              width: 32,
+              height: 32,
+              border: '2px solid',
+              borderColor: 'error.main',
+              borderRadius: 1,
+              backgroundColor: 'error.light',
+              '&:hover': {
+                backgroundColor: 'error.main',
+                '& .MuiTypography-root': {
+                  color: 'white'
+                }
+              }
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 900, color: 'error.main', fontSize: '1rem' }}>×</Typography>
+          </IconButton>
+        ) : (
+          <Box sx={{ width: 32, height: 32 }} />
+        )}
+      </Box>
     </Box>
   );
 });
 
 
 
-export default function CharacterSkills() {
+export default function CharacterSkills({ setting }: { setting?: { id: string; name: string } }) {
   const { values, setFieldValue } = useFormikContext<CharacterSkillsValues & any>();
 
-  // Group skills by category
-  const skillsByCategory = skillsList.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
-    }
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as { [key: string]: typeof skillsList });
+  // Get the current era from props or form values to load the correct skills
+  const currentEra = setting?.id || (values as any).setting || '1920s';
+  const eraSkills = skillsByEra[currentEra] || skillsByEra['1920s'];
+
+  // Group skills by category - memoized to avoid recalculation unless era changes
+  const skillsByCategory = useMemo(() => {
+    return eraSkills.reduce((acc: { [key: string]: SkillDef[] }, skill: SkillDef) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = [];
+      }
+      acc[skill.category].push(skill);
+      return acc;
+    }, {} as { [key: string]: SkillDef[] });
+  }, [eraSkills]);
 
   // Include dynamically added language skills (custom languages) into the Languages category
-  const renderSkillsByCategory = (() => {
+  // Only recalculate when values.skills changes
+  const renderSkillsByCategory = useMemo(() => {
     const cloned: { [key: string]: SkillDef[] } = Object.keys(skillsByCategory).reduce((acc, key) => {
       acc[key] = [...(skillsByCategory as any)[key]] as SkillDef[];
       return acc;
@@ -292,7 +329,7 @@ export default function CharacterSkills() {
     if (!cloned['Languages']) cloned['Languages'] = [] as SkillDef[];
     cloned['Languages'] = ([...(cloned['Languages'] as SkillDef[]), ...dynamicLangs]);
     return cloned as { [key: string]: SkillDef[] };
-  })();
+  }, [skillsByCategory, values.skills]);
 
   // Calculate pools according to CoC7 rules (assumed defaults):
   // Occupational Points = EDU * 4
@@ -305,9 +342,12 @@ export default function CharacterSkills() {
 
   const bonusPoints = parseInt(values.bonusSkillPoints || 0) || 0;
 
-  // Totals spent
-  const totalOccupationSpent = Object.values(values.skills || {}).reduce((acc: number, s: any) => acc + (parseInt(s?.occupation || 0) || 0), 0);
-  const totalPersonalSpent = Object.values(values.skills || {}).reduce((acc: number, s: any) => acc + (parseInt(s?.personal || 0) || 0), 0);
+  // Totals spent - memoized to avoid recalculating on every render
+  const { totalOccupationSpent, totalPersonalSpent } = useMemo(() => {
+    const occSpent = Object.values(values.skills || {}).reduce((acc: number, s: any) => acc + (parseInt(s?.occupation || 0) || 0), 0);
+    const perSpent = Object.values(values.skills || {}).reduce((acc: number, s: any) => acc + (parseInt(s?.personal || 0) || 0), 0);
+    return { totalOccupationSpent: occSpent, totalPersonalSpent: perSpent };
+  }, [values.skills]);
 
   const overOccupation = Math.max(0, totalOccupationSpent - occupationalPoints);
   const overPersonal = Math.max(0, totalPersonalSpent - personalPoints);
@@ -422,212 +462,257 @@ export default function CharacterSkills() {
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [expandAll, setExpandAll] = useState(false);
+  const [newLanguageName, setNewLanguageName] = useState('');
 
-  const toggleExpandAll = () => {
+  const toggleExpandAll = useCallback(() => {
     if (expandAll) {
       setExpandedSections(new Set());
     } else {
       setExpandedSections(new Set(Object.keys(skillsByCategory)));
     }
     setExpandAll(!expandAll);
-  };
+  }, [expandAll, skillsByCategory]);
+
+  const handleAddLanguage = useCallback(() => {
+    const clean = newLanguageName.trim();
+    if (!clean) return;
+    
+    const languageSkills = renderSkillsByCategory['Languages'] || [];
+    const usesOtherLanguage = (languageSkills as SkillDef[]).some(s => s.name === 'Other Language');
+    const key = usesOtherLanguage ? `Other Language (${clean})` : `Language (Other) (${clean})`;
+    
+    if (values.skills?.[key]) {
+      setClampMessage(`${key} already exists.`);
+      setSnackOpen(true);
+      return;
+    }
+    
+    setFieldValue(`skills.${key}` as any, {
+      base: 1,
+      occupation: 0,
+      personal: 0,
+      final: 1,
+      checked: false,
+      adjustment: 0
+    });
+    setNewLanguageName('');
+    
+    const newExpanded = new Set(expandedSections);
+    newExpanded.add('Languages');
+    setExpandedSections(newExpanded);
+    
+    setClampMessage(`${key} added.`);
+    setSnackOpen(true);
+  }, [newLanguageName, renderSkillsByCategory, values.skills, expandedSections, setFieldValue]);
 
   return (
     <>
       <Box sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">Skills</Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={toggleExpandAll}
-            sx={{ textTransform: 'none' }}
-          >
-            {expandAll ? 'Collapse All' : 'Expand All'}
-          </Button>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_, newValue) => newValue && setViewMode(newValue)}
-            size="small"
-          >
-            <ToggleButton value="create" sx={{ px: 2 }}>
-              Create
-            </ToggleButton>
-            <ToggleButton value="play" sx={{ px: 2 }}>
-              Play
-            </ToggleButton>
-          </ToggleButtonGroup>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5">Skills</Typography>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={toggleExpandAll}
+              sx={{ textTransform: 'none' }}
+            >
+              {expandAll ? 'Collapse All' : 'Expand All'}
+            </Button>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(_, newValue) => newValue && setViewMode(newValue)}
+              size="small"
+            >
+              <ToggleButton value="create" sx={{ px: 2 }}>
+                Create
+              </ToggleButton>
+              <ToggleButton value="play" sx={{ px: 2 }}>
+                Play
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
         </Box>
-      </Box>
-      {viewMode === 'create' && (
-        <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
-            <Stack spacing={1}>
-              <Typography variant="subtitle2" color="primary.main">Occupation Points</Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Chip label={`Total: ${occupationalPoints}`} color="primary" />
-                <Chip label={`Spent: ${totalOccupationSpent}`} variant="outlined" />
-                <Chip label={`Remaining: ${Math.max(0, occupationalPoints - totalOccupationSpent)}`} />
+
+        {viewMode === 'create' && (
+          <Paper elevation={1} sx={{ p: 3, mb: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2" color="primary.main">Occupation Points</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={`Total: ${occupationalPoints}`} color="primary" />
+                  <Chip label={`Spent: ${totalOccupationSpent}`} variant="outlined" />
+                  <Chip label={`Remaining: ${Math.max(0, occupationalPoints - totalOccupationSpent)}`} />
+                </Stack>
               </Stack>
-            </Stack>
-            <Stack spacing={1}>
-              <Typography variant="subtitle2" color="secondary.main">Personal Points</Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Chip label={`Total: ${personalPoints}`} color="secondary" />
-                <Chip label={`Spent: ${totalPersonalSpent}`} variant="outlined" />
-                <Chip label={`Remaining: ${Math.max(0, personalPoints - totalPersonalSpent)}`} />
+              <Stack spacing={1}>
+                <Typography variant="subtitle2" color="secondary.main">Personal Points</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={`Total: ${personalPoints}`} color="secondary" />
+                  <Chip label={`Spent: ${totalPersonalSpent}`} variant="outlined" />
+                  <Chip label={`Remaining: ${Math.max(0, personalPoints - totalPersonalSpent)}`} />
+                </Stack>
               </Stack>
-            </Stack>
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">Bonus Points</Typography>
-              <TextField
-                label="Available"
-                type="number"
-                size="small"
-                value={bonusPoints}
-                onChange={e => setFieldValue('bonusSkillPoints', Math.max(0, parseInt(e.target.value || '0') || 0))}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">pts</InputAdornment>
-                }}
-                sx={{ width: '140px' }}
-              />
-            </Stack>
-            <Stack spacing={1} sx={{ height: '100%', justifyContent: 'flex-end' }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Chip label={`Used: ${totalOver}`} variant="outlined" />
-                <Chip 
-                  label={`Remaining: ${remainingBonus}`} 
-                  color={remainingBonus > 0 ? 'default' : 'error'}
-                  sx={{ minWidth: '120px' }}
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Bonus Points</Typography>
+                <TextField
+                  label="Available"
+                  type="number"
+                  size="small"
+                  value={bonusPoints}
+                  onChange={e => setFieldValue('bonusSkillPoints', Math.max(0, parseInt(e.target.value || '0') || 0))}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">pts</InputAdornment>
+                  }}
+                  sx={{ width: '140px' }}
                 />
               </Stack>
-            </Stack>
+              <Stack spacing={1} sx={{ height: '100%', justifyContent: 'flex-end' }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={`Used: ${totalOver}`} variant="outlined" />
+                  <Chip 
+                    label={`Remaining: ${remainingBonus}`} 
+                    color={remainingBonus > 0 ? 'default' : 'error'}
+                    sx={{ minWidth: '120px' }}
+                  />
+                </Stack>
+              </Stack>
+            </Box>
+          </Paper>
+        )}
+
+        {viewMode === 'play' && (
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Typography variant="subtitle1" color="text.secondary" align="center">
+              Full • Half • Fifth
+            </Typography>
           </Box>
-        </Paper>
-      )}
+        )}
 
-      {viewMode === 'play' && (
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-          <Typography variant="subtitle1" color="text.secondary" align="center">
-            Full • Half • Fifth
-          </Typography>
-        </Box>
-      )}
+        <Paper elevation={1} sx={{ p: 2 }}>
+          {Object.entries(renderSkillsByCategory).map(([category, skills]) => (
+              <Accordion 
+                key={category}
+                expanded={expandedSections.has(category)}
+                onChange={(_, isExpanded) => {
+                  const newExpanded = new Set(expandedSections);
+                  if (isExpanded) {
+                    newExpanded.add(category);
+                  } else {
+                    newExpanded.delete(category);
+                  }
+                  setExpandedSections(newExpanded);
+                  // Update expandAll state based on whether all are expanded
+                  setExpandAll(newExpanded.size === Object.keys(renderSkillsByCategory).length);
+                }}
+              >
+              <AccordionSummary 
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  '&.Mui-expanded': {
+                    minHeight: 48,
+                    margin: '12px 0',
+                  }
+                }}
+              >
+                <Typography variant="h6">{category}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  background: '#f7f3e3',
+                  border: '1px solid #bfa46d',
+                  borderRadius: 2,
+                  p: 2,
+                }}>
+                  {(() => {
+                    // Build base keys set from the original era skills (WITHOUT dynamic languages)
+                    // For Languages, use skillsByCategory which has only the era's base languages
+                    const baseSkillsForCategory = category === 'Languages' 
+                      ? (skillsByCategory['Languages'] || [])
+                      : (skillsByCategory[category] || []);
+                    
+                    const baseKeysSet = new Set(
+                      baseSkillsForCategory.map(s => s.name + (s.specialization ? ` ${s.specialization}` : ''))
+                    );
+                    
+                    // skills parameter comes from renderSkillsByCategory which already includes dynamic languages
+                    const effectiveSkills: SkillDef[] = skills;
+                    
+                    return effectiveSkills.map((skill) => {
+                      const key = skill.name + (skill.specialization ? ` ${skill.specialization}` : '');
+                      const skillValue = values.skills?.[key] || { 
+                        base: skill.base, 
+                        occupation: 0, 
+                        personal: 0, 
+                        final: skill.base, 
+                        checked: false, 
+                        adjustment: 0 
+                      };
 
-      <Paper elevation={1} sx={{ p: 2 }}>
-        {Object.entries(renderSkillsByCategory).map(([category, skills]) => (
-            <Accordion 
-              key={category}
-              expanded={expandedSections.has(category)}
-              onChange={(_, isExpanded) => {
-                const newExpanded = new Set(expandedSections);
-                if (isExpanded) {
-                  newExpanded.add(category);
-                } else {
-                  newExpanded.delete(category);
-                }
-                setExpandedSections(newExpanded);
-                // Update expandAll state based on whether all are expanded
-                setExpandAll(newExpanded.size === Object.keys(renderSkillsByCategory).length);
-              }}
-            >
-            <AccordionSummary 
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                '&.Mui-expanded': {
-                  minHeight: 48,
-                  margin: '12px 0',
-                }
-              }}
-            >
-              <Typography variant="h6">{category}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {category === 'Languages' && (
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={() => {
-                      const baseList = (renderSkillsByCategory['Languages'] || []) as SkillDef[];
-                      const usesOtherLanguage = baseList.some(s => s.name === 'Other Language');
-                      const promptName = window.prompt('Add language (e.g., French)');
-                      if (!promptName) return;
-                      const clean = String(promptName).trim();
-                      if (!clean) return;
-                      const key = usesOtherLanguage ? `Other Language (${clean})` : `Language (Other) (${clean})`;
-                      if (values.skills?.[key]) {
-                        setClampMessage(`${key} already exists.`);
-                        setSnackOpen(true);
-                        return;
-                      }
-                      setFieldValue(`skills.${key}` as any, {
-                        base: 1,
-                        occupation: 0,
-                        personal: 0,
-                        final: 1,
-                        checked: false,
-                        adjustment: 0
-                      });
-                      // Expand Languages section if not already
-                      const newExpanded = new Set(expandedSections);
-                      newExpanded.add('Languages');
-                      setExpandedSections(newExpanded);
-                    }}
-                  >
-                    Add Language
-                  </Button>
+                      // A skill is dynamic (deletable) if it's in Languages category and not in the base list
+                      const isDynamic = category === 'Languages' && !baseKeysSet.has(key) && 
+                                       /^(Language \(Other\)|Other Language)\s*\(.+\)$/.test(key);
+                      
+                      const deleteHandler = isDynamic ? () => {
+                        if (window.confirm(`Are you sure you want to delete ${key}?`)) {
+                          const newSkills = { ...(values.skills || {}) };
+                          delete newSkills[key];
+                          setFieldValue('skills', newSkills);
+                        }
+                      } : undefined;
+
+                      return viewMode === 'create' ? (
+                        <SkillField
+                          key={key}
+                          name={key}
+                          base={skill.base}
+                          value={skillValue}
+                          onOccupationChange={(v) => handleOccupationChange(key, v)}
+                          onPersonalChange={(v) => handlePersonalChange(key, v)}
+                          onCheckedChange={(checked: boolean) => setFieldValue(`skills.${key}.checked`, checked)}
+                          onAdjustmentChange={(adj: number) => setFieldValue(`skills.${key}.adjustment`, adj)}
+                          onDelete={deleteHandler}
+                        />
+                      ) : (
+                        <PlayModeSkillField
+                          key={key}
+                          name={key}
+                          base={skill.base}
+                          value={skillValue}
+                          onCheckedChange={(checked: boolean) => setFieldValue(`skills.${key}.checked`, checked)}
+                        />
+                      );
+                    });
+                  })()}
                 </Box>
-              )}
-              <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-                background: '#f7f3e3',
-                border: '1px solid #bfa46d',
-                borderRadius: 2,
-                p: 2,
-              }}>
-                {skills.map((skill) => {
-                  const key = skill.name + (skill.specialization ? ` ${skill.specialization}` : '');
-                  const skillValue = values.skills?.[key] || { 
-                    base: skill.base, 
-                    occupation: 0, 
-                    personal: 0, 
-                    final: skill.base, 
-                    checked: false, 
-                    adjustment: 0 
-                  };
-
-                  return viewMode === 'create' ? (
-                    <SkillField
-                      key={key}
-                      name={key}
-                      base={skill.base}
-                      value={skillValue}
-                      onOccupationChange={(v) => handleOccupationChange(key, v)}
-                      onPersonalChange={(v) => handlePersonalChange(key, v)}
-                      onCheckedChange={(checked: boolean) => setFieldValue(`skills.${key}.checked`, checked)}
-                      onAdjustmentChange={(adj: number) => setFieldValue(`skills.${key}.adjustment`, adj)}
+                {viewMode === 'create' && category === 'Languages' && (
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'flex-start', mt: 1 }}>
+                    <TextField
+                      size="small"
+                      label="New language"
+                      value={newLanguageName}
+                      onChange={(e) => setNewLanguageName(e.target.value)}
+                      sx={{ maxWidth: 260 }}
                     />
-                  ) : (
-                    <PlayModeSkillField
-                      key={key}
-                      name={key}
-                      base={skill.base}
-                      value={skillValue}
-                      onCheckedChange={(checked: boolean) => setFieldValue(`skills.${key}.checked`, checked)}
-                    />
-                  );
-                })}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Paper>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<AddIcon />}
+                      disabled={!newLanguageName.trim()}
+                      onClick={handleAddLanguage}
+                    >
+                      Add Language
+                    </Button>
+                  </Box>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </Paper>
       </Box>
       <Snackbar open={snackOpen} autoHideDuration={5000} onClose={() => setSnackOpen(false)}>
         <Alert severity="warning" onClose={() => setSnackOpen(false)} sx={{ width: '100%' }}>

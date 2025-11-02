@@ -49,8 +49,7 @@ const createWindow = async () => {
     height: 800,
     title: "Call of Cthulhu Character Editor",
     backgroundColor: '#f7f3e3', // Match the app background color
-    titleBarStyle: 'hidden', // More modern look
-    trafficLightPosition: { x: 16, y: 16 }, // Better positioning for macOS window controls
+    // Use the default OS title bar
     webPreferences: {
       // security best practices:
       contextIsolation: true,
@@ -190,4 +189,12 @@ ipcMain.handle('window:new', () => {
 app.on("window-all-closed", () => {
   // On macOS, apps commonly stay active until Cmd+Q
   if (process.platform !== "darwin") app.quit();
+});
+
+// Allow renderer to set the window title dynamically
+ipcMain.handle('window:setTitle', (event, title: string) => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.setTitle(title);
+  }
 });

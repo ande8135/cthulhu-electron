@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
   getRecentFiles: () => ipcRenderer.invoke('recent:get'),
   addRecentFile: (filePath: string) => ipcRenderer.invoke('recent:add', filePath),
   newWindow: () => ipcRenderer.invoke('window:new'),
+  setTitle: (title: string) => ipcRenderer.invoke('window:setTitle', title),
   
   // Listen for save/load events from menu
   onFileSave: (callback: (filePath: string) => void) => {
