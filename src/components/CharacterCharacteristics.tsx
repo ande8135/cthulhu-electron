@@ -1,6 +1,6 @@
-import { Box, Paper, TextField, Typography } from '@mui/material';
+import { Box, Paper, TextField, Typography, IconButton } from '@mui/material';
 import { useFormikContext } from 'formik';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { Setting } from '../data/settings';
 import {
   calculateDamageBonus,
@@ -159,6 +159,77 @@ function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
     }
   };
 
+  // Watch for changes to Cthulhu Mythos skill and update Max Sanity
+  useEffect(() => {
+    const skills: any = (values as any).skills || {};
+    const cm = skills['Cthulhu Mythos'] || {};
+    
+    // Get the final Cthulhu Mythos value (base + occupation + personal + adjustment)
+    const base = parseInt(cm.base ?? 0) || 0;
+    const occupation = parseInt(cm.occupation ?? 0) || 0;
+    const personal = parseInt(cm.personal ?? 0) || 0;
+    const adjustment = parseInt(cm.adjustment ?? 0) || 0;
+    
+    const mythosVal = Math.max(0, Math.min(99, base + occupation + personal + adjustment));
+    
+    // Calculate Max Sanity: 99 - Cthulhu Mythos
+    const maxSan = Math.max(0, 99 - mythosVal);
+    
+    // Only update if the value has actually changed to avoid infinite loops
+    if (values.maxSanity !== maxSan.toString()) {
+      setFieldValue('maxSanity', maxSan.toString());
+    }
+  }, [
+    (values as any).skills?.['Cthulhu Mythos']?.base,
+    (values as any).skills?.['Cthulhu Mythos']?.occupation,
+    (values as any).skills?.['Cthulhu Mythos']?.personal,
+    (values as any).skills?.['Cthulhu Mythos']?.adjustment,
+    values.maxSanity,
+    setFieldValue
+  ]);
+
+  const handleSanityChange = (delta: number) => {
+    const currentSanity = parseInt(values.sanity) || 0;
+    const maxSanity = parseInt(values.maxSanity) || 99;
+    const newSanity = Math.max(0, Math.min(maxSanity, currentSanity + delta));
+    setFieldValue('sanity', newSanity.toString());
+  };
+
+  const handleSanityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string for editing
+    if (value === '') {
+      setFieldValue('sanity', '');
+      return;
+    }
+    
+    const numValue = parseInt(value) || 0;
+    const maxSanity = parseInt(values.maxSanity) || 99;
+    const clampedValue = Math.max(0, Math.min(maxSanity, numValue));
+    setFieldValue('sanity', clampedValue.toString());
+  };
+
+  const handleHpChange = (delta: number) => {
+    const currentHp = parseInt(values.hp) || 0;
+    const maxHp = parseInt(values.maxHp) || 0;
+    const newHp = Math.max(0, Math.min(maxHp, currentHp + delta));
+    setFieldValue('hp', newHp.toString());
+  };
+
+  const handleHpInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string for editing
+    if (value === '') {
+      setFieldValue('hp', '');
+      return;
+    }
+    
+    const numValue = parseInt(value) || 0;
+    const maxHp = parseInt(values.maxHp) || 0;
+    const clampedValue = Math.max(0, Math.min(maxHp, numValue));
+    setFieldValue('hp', clampedValue.toString());
+  };
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
@@ -264,17 +335,37 @@ function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
             value={values.build}
             disabled
           />
-          <TextField
-            fullWidth
-            size="small"
-            id="hp"
-            name="hp"
-            label="Hit Points"
-            variant="outlined"
-            value={values.hp}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <TextField
+              fullWidth
+              size="small"
+              id="hp"
+              name="hp"
+              label="Hit Points"
+              variant="outlined"
+              value={values.hp}
+              onChange={handleHpInputChange}
+              onBlur={handleBlur}
+              inputProps={{
+                min: 0,
+                max: parseInt(values.maxHp) || 0
+              }}
+            />
+            <IconButton 
+              size="small" 
+              onClick={() => handleHpChange(-1)}
+              sx={{ padding: '2px' }}
+            >
+              <Typography variant="caption">−</Typography>
+            </IconButton>
+            <IconButton 
+              size="small"
+              onClick={() => handleHpChange(1)}
+              sx={{ padding: '2px' }}
+            >
+              <Typography variant="caption">+</Typography>
+            </IconButton>
+          </Box>
           <TextField
             fullWidth
             size="small"
@@ -285,17 +376,37 @@ function CharacterCharacteristics({ setting }: CharacterCharacteristicsProps) {
             value={values.maxHp}
             disabled
           />
-          <TextField
-            fullWidth
-            size="small"
-            id="sanity"
-            name="sanity"
-            label="Sanity"
-            variant="outlined"
-            value={values.sanity}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <TextField
+              fullWidth
+              size="small"
+              id="sanity"
+              name="sanity"
+              label="Sanity"
+              variant="outlined"
+              value={values.sanity}
+              onChange={handleSanityInputChange}
+              onBlur={handleBlur}
+              inputProps={{
+                min: 0,
+                max: parseInt(values.maxSanity) || 99
+              }}
+            />
+            <IconButton 
+              size="small" 
+              onClick={() => handleSanityChange(-1)}
+              sx={{ padding: '2px' }}
+            >
+              <Typography variant="caption">−</Typography>
+            </IconButton>
+            <IconButton 
+              size="small"
+              onClick={() => handleSanityChange(1)}
+              sx={{ padding: '2px' }}
+            >
+              <Typography variant="caption">+</Typography>
+            </IconButton>
+          </Box>
           <TextField
             fullWidth
             size="small"
