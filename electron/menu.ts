@@ -111,10 +111,29 @@ export function createApplicationMenu(win: BrowserWindow) {
           { role: 'delete' },
           { role: 'selectAll' },
           { type: 'separator' },
+          {
+            label: 'Find',
+            accelerator: 'CmdOrCtrl+F',
+            click: () => {
+              if (win && !win.isDestroyed()) {
+                win.webContents.send('menu:find');
+              }
+            }
+          }
         ] : [
           { role: 'delete' },
           { type: 'separator' },
-          { role: 'selectAll' }
+          { role: 'selectAll' },
+          { type: 'separator' },
+          {
+            label: 'Find',
+            accelerator: 'CmdOrCtrl+F',
+            click: () => {
+              if (win && !win.isDestroyed()) {
+                win.webContents.send('menu:find');
+              }
+            }
+          }
         ])
       ]
     },

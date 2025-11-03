@@ -90,6 +90,13 @@ const createWindow = async () => {
     await win.loadFile(path.join(__dirname, "../index.html"));
   }
 
+  // Forward find results back to the renderer so UI can react without losing focus
+  win.webContents.on('found-in-page', (_event, result) => {
+    try {
+      win?.webContents.send('find:result', result);
+    } catch {}
+  });
+
   // Open external links in default browser
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -196,5 +203,20 @@ ipcMain.handle('window:setTitle', (event, title: string) => {
   const senderWin = BrowserWindow.fromWebContents(event.sender);
   if (senderWin && !senderWin.isDestroyed()) {
     senderWin.setTitle(title);
+  }
+});
+
+// Handle find in page
+ipcMain.handle('window:findInPage', (event, text: string, options?: { forward?: boolean; findNext?: boolean }) => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.webContents.findInPage(text, options);
+  }
+});
+
+ipcMain.handle('window:stopFindInPage', (event, action: 'clearSelection' | 'keepSelection' | 'activateSelection') => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.webContents.stopFindInPage(action);
   }
 });

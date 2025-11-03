@@ -15,6 +15,7 @@ import '@fontsource/inter/600.css';
 
 import { settings } from './data/settings';
 import WelcomeDialog from './components/WelcomeDialog';
+import FindBar from './components/FindBar';
 import * as Yup from 'yup';
 import CircularProgress from '@mui/material/CircularProgress';
 import CharacterBasicInfo from './components/CharacterBasicInfo';
@@ -210,6 +211,7 @@ export default function App() {
   const formikRef = useRef<any>(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [selectedSetting, setSelectedSetting] = useState(settings[0]);
+    const [findDialogOpen, setFindDialogOpen] = useState(false);
   const isLoadingFileRef = useRef(false);
 
   useEffect(() => {
@@ -274,10 +276,20 @@ export default function App() {
       }
     });
 
+    // Listen for find command from menu
+    api.onFind(() => {
+      setFindDialogOpen(true);
+    });
+
     // Listen for keyboard shortcuts
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
         switch (e.key) {
+          case 'f': {
+            e.preventDefault();
+            setFindDialogOpen(true);
+            break;
+          }
           case 's': {
             e.preventDefault();
             const filePath = await api.showSaveDialog();
@@ -394,6 +406,10 @@ export default function App() {
             }
           }
         }}
+      />
+      <FindBar 
+        open={findDialogOpen}
+        onClose={() => setFindDialogOpen(false)}
       />
       <Box 
         sx={{ 

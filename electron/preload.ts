@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld('api', {
   addRecentFile: (filePath: string) => ipcRenderer.invoke('recent:add', filePath),
   newWindow: () => ipcRenderer.invoke('window:new'),
   setTitle: (title: string) => ipcRenderer.invoke('window:setTitle', title),
+  findInPage: (text: string, options?: { forward?: boolean; findNext?: boolean }) => 
+    ipcRenderer.invoke('window:findInPage', text, options),
+  stopFindInPage: (action: 'clearSelection' | 'keepSelection' | 'activateSelection') => 
+    ipcRenderer.invoke('window:stopFindInPage', action),
   
   // Listen for save/load events from menu
   onFileSave: (callback: (filePath: string) => void) => {
@@ -17,6 +21,12 @@ contextBridge.exposeInMainWorld('api', {
   },
   onFileLoad: (callback: (filePath: string) => void) => {
     ipcRenderer.on('file:load', (_, filePath) => callback(filePath));
+  },
+  onFind: (callback: () => void) => {
+    ipcRenderer.on('menu:find', () => callback());
+  },
+  onFindResult: (callback: (result: any) => void) => {
+    ipcRenderer.on('find:result', (_evt, result) => callback(result));
   }
 });
 
