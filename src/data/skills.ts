@@ -30,7 +30,6 @@ export const skillsList: Skill[] = [
   // General Skills
   { name: "First Aid", base: 30, category: "General" },
   { name: "History", base: 5, category: "General" },
-  { name: "Language (Own)", base: 0, category: "General" }, // EDU
   { name: "Natural World", base: 10, category: "General" },
   { name: "Navigate", base: 10, category: "General" },
   { name: "Occult", base: 5, category: "General" },
@@ -70,6 +69,7 @@ export const skillsList: Skill[] = [
   { name: "Art/Craft", base: 5, category: "Art & Craft", specialization: "(Photography)" },
   
   // Language Skills
+  { name: "Own Language", base: 0, category: "Languages" }, // EDU-based in UI
   { name: "Language (Other)", base: 1, category: "Languages", specialization: "(Latin)" },
   { name: "Language (Other)", base: 1, category: "Languages", specialization: "(Greek)" },
   { name: "Language (Other)", base: 1, category: "Languages", specialization: "(Arabic)" }

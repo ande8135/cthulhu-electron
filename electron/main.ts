@@ -49,8 +49,7 @@ const createWindow = async () => {
     height: 800,
     title: "Call of Cthulhu Character Editor",
     backgroundColor: '#f7f3e3', // Match the app background color
-    titleBarStyle: 'hidden', // More modern look
-    trafficLightPosition: { x: 16, y: 16 }, // Better positioning for macOS window controls
+    // Use the default OS title bar
     webPreferences: {
       // security best practices:
       contextIsolation: true,
@@ -86,11 +85,17 @@ const createWindow = async () => {
 
   if (isDev) {
     await win.loadURL("http://localhost:5173");
-    win.webContents.openDevTools();
   } else {
     // Load built index.html
     await win.loadFile(path.join(__dirname, "../index.html"));
   }
+
+  // Forward find results back to the renderer so UI can react without losing focus
+  win.webContents.on('found-in-page', (_event, result) => {
+    try {
+      win?.webContents.send('find:result', result);
+    } catch {}
+  });
 
   // Open external links in default browser
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -127,17 +132,53 @@ ipcMain.handle('dialog:showOpen', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('file:save', async (_, data) => {
-  const { filePath, ...characterData } = data;
-  await fs.writeFile(filePath, JSON.stringify(characterData, null, 2));
-  await addRecentFile(filePath);
-  return true;
+ipcMain.handle('file:save', async (_, filePath, characterData) => {
+  try {
+    await fs.writeFile(filePath, JSON.stringify(characterData, null, 2));
+    await addRecentFile(filePath);
+    return { success: true, filePath };
+  } catch (error) {
+    console.error('Error saving file:', error);
+    return { success: false, error: String(error) };
+  }
 });
 
 ipcMain.handle('file:load', async (_, filePath) => {
-  const content = await fs.readFile(filePath, 'utf-8');
-  await addRecentFile(filePath);
-  return { ...JSON.parse(content), filePath };
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    await addRecentFile(filePath);
+    return { success: true, data: JSON.parse(content) };
+  } catch (error) {
+    console.error('Error loading file:', error);
+    return { success: false, error: String(error) };
+  }
+});
+
+ipcMain.handle('character:getData', async (event) => {
+  // Request character data from renderer
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) {
+    return { success: false, error: 'Window not available' };
+  }
+  
+  try {
+    const data = await win.webContents.executeJavaScript(`
+      (function() {
+        if (window.formikRef && window.formikRef.current) {
+          return window.formikRef.current.values;
+        }
+        return null;
+      })()
+    `);
+    
+    if (data) {
+      return { success: true, data };
+    } else {
+      return { success: false, error: 'No form data available' };
+    }
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
 });
 
 ipcMain.handle('recent:get', async () => {
@@ -155,4 +196,27 @@ ipcMain.handle('window:new', () => {
 app.on("window-all-closed", () => {
   // On macOS, apps commonly stay active until Cmd+Q
   if (process.platform !== "darwin") app.quit();
+});
+
+// Allow renderer to set the window title dynamically
+ipcMain.handle('window:setTitle', (event, title: string) => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.setTitle(title);
+  }
+});
+
+// Handle find in page
+ipcMain.handle('window:findInPage', (event, text: string, options?: { forward?: boolean; findNext?: boolean }) => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.webContents.findInPage(text, options);
+  }
+});
+
+ipcMain.handle('window:stopFindInPage', (event, action: 'clearSelection' | 'keepSelection' | 'activateSelection') => {
+  const senderWin = BrowserWindow.fromWebContents(event.sender);
+  if (senderWin && !senderWin.isDestroyed()) {
+    senderWin.webContents.stopFindInPage(action);
+  }
 });
